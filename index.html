@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geryme Vega | Portfolio</title>
+    
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%232563eb"/><text x="50" y="68" font-family="system-ui, sans-serif" font-weight="800" font-size="55" fill="white" text-anchor="middle">GV</text></svg>' type="image/svg+xml">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        /* ==========================================================================
+           Theme Configuration & CSS Variables
+           ========================================================================== */
+        :root {
+            /* Light Theme Dictionary */
+            --bg-base: #f8fafc;
+            --bg-surface: rgba(255, 255, 255, 0.7);
+            --grid-line: rgba(37, 99, 235, 0.1);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-brand: #2563eb;
+            --accent-hover: #1d4ed8;
+            --border-subtle: #e2e8f0;
+            --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            
+            /* Typography Scale */
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Animation Timings */
+            --transition-theme: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Dictionary */
+            --bg-base: #020617;
+            --bg-surface: rgba(15, 23, 42, 0.7);
+            --grid-line: rgba(56, 189, 248, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-brand: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --border-subtle: #1e293b;
+            --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ==========================================================================
+           Global Reset & Base Styles
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background-color: var(--bg-base);
+            transition: var(--transition-theme);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Dynamic Grid Background --- */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+            transition: var(--transition-theme);
+            pointer-events: none;
+        }
+
+        /* --- Interactive Cursor Glow --- */
+        .cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--grid-line) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: -1;
+            transition: background 0.4s ease;
+        }
+
+        /* ==========================================================================
+           Layout Architecture (Asymmetrical Split)
+           ========================================================================== */
+        .layout-container {
+            display: flex;
+            max-width: 1280px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 0 2rem;
+        }
+
+        .pane-left {
+            width: 45%;
+            padding: 5rem 3rem 5rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pane-right {
+            width: 55%;
+            padding: 5rem 0;
+        }
+
+        /* ==========================================================================
+           Components: Header & Navigation
+           ========================================================================== */
+        .theme-controller {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 50;
+        }
+
+        .btn-theme {
+            background: var(--bg-surface);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-theme:hover {
+            border-color: var(--accent-brand);
+            color: var(--accent-brand);
+        }
+
+        /* --- Animated Hero Typography --- */
+        .header-title {
+            font-size: clamp(3.5rem, 6vw, 5.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title .text-dark {
+            color: var(--text-primary);
+        }
+
+        .header-title .text-brand {
+            color: var(--accent-brand);
+        }
+
+        /* Staggered Reveal Animation Setup */
+        .reveal-text {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        }
+
+        .reveal-text span {
+            display: block;
+            transform: translateY(110%);
+            opacity: 0;
+            animation: slideUpReveal 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+
+        .reveal-text.delay span {
+            animation-delay: 0.15s;
+        }
+
+        @keyframes slideUpReveal {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .profile-summary {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 420px;
+            margin-bottom: 2.5rem;
+            animation: fadeIn 1s ease 0.4s forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* --- Navigation Links --- */
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 0.6s forwards;
+        }
+
+        .nav-links a {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: fit-content;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-brand);
+            transform: translateX(8px);
+        }
+
+        /* ==========================================================================
+           Components: Content Cards & Sections
+           ========================================================================== */
+        .section-wrapper {
+            margin-bottom: 6rem;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-brand);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-label::after {
+            content: "";
+            height: 1px;
+            flex: 1;
+            background: var(--border-subtle);
+            transition: var(--transition-theme);
+        }
+
+        /* --- Interactive Card Design --- */
+        .content-card {
+            padding: 2rem;
+            border-radius: 12px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-card::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 100%;
+            background: var(--accent-brand);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .content-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-brand);
+        }
+
+        .content-card:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .card-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-brand);
+            font-weight: 600;
+        }
+
+        .card-body {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* --- Technical Skills Badges --- */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .tech-tag {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .tech-tag:hover {
+            background: var(--accent-brand);
+            color: var(--bg-base);
+            border-color: var(--accent-brand);
+            transform: translateY(-2px);
+        }
+
+        /* --- Scroll Reveal Utility Classes --- */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .scroll-reveal.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ==========================================================================
+           Responsive Media Queries
+           ========================================================================== */
+        @media (max-width: 968px) {
+            .layout-container { flex-direction: column; padding: 0 1.5rem; }
+            .pane-left {
+                width: 100%; height: auto; position: relative;
+                padding: 6rem 0 3rem 0; border-bottom: 1px dashed var(--border-subtle);
+            }
+            .pane-right { width: 100%; padding: 3rem 0; }
+            .theme-controller { top: 1.5rem; right: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <nav class="theme-controller">
+        <button class="btn-theme" id="themeToggle" aria-label="Toggle Theme">
+            [ Switch to Dark ]
+        </button>
+    </nav>
+
+    <div class="layout-container">
+        
+        <aside class="pane-left">
+            <h1 class="header-title">
+                <span class="reveal-text"><span class="text-dark">Geryme</span></span>
+                <span class="reveal-text delay"><span class="text-brand">Vega</span></span>
+            </h1>
+            
+            <p class="profile-summary">
+                DOST-SEI Scholar and competitive programmer with rigorous training in Algorithms, Data Structures, and Linear Algebra. Focused on engineering low-level C++ solutions, optimizing memory management, and applying mathematical models to complex software challenges.
+            </p>
+
+            <nav class="nav-links">
+                <a href="mailto:gerymevega@gmail.com">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    gerymevega@gmail.com
+                </a>
+                <a href="https://github.com/gerymeee/" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    github.com/gerymeee
+                </a>
+                <a href="https://www.linkedin.com/in/geryme-vega-a624b636a/" target="_blank" rel="noopener">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    LinkedIn Profile
+                </a>
+                <a href="#">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    Baybay City, Leyte
+                </a>
+            </nav>
+        </aside>
+
+        <main class="pane-right">
+            
+            <section class="section-wrapper scroll-reveal">
+                <h2 class="section-label">01. Education</h2>
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">B.S. in Computer Science</h3>
+                        <span class="card-meta">2024 — 2028</span>
+                    </header>
+                    <p class="card-body">
+                        <strong>Visayas State University.</strong> General Weighted Average: 1.455. Awarded the highly selective DOST-SEI Scholarship (RA 7687) by scoring in the top 11% of 90,000 examinees nationwide.
+                    </p>
+                </article>
+            </section>
+
+            <section class="section-wrapper scroll-reveal">
+                <h2 class="section-label">02. Engineering & Development</h2>
+                
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">Custom Data Structures Library</h3>
+                        <span class="card-meta">C++ / Algorithms</span>
+                    </header>
+                    <p class="card-body">Engineered a low-level C++ library with custom Linked Lists and Binary Search Trees (BST), manually managing memory to eliminate STL overhead. Reduced search time complexity from O(n) to O(log n), achieving a 90% speed improvement, and applied multithreading for optimized CPU utilization.</p>
+                </article>
+
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">EcoBayan Application</h3>
+                        <span class="card-meta">1st Place, RSCENE 2025</span>
+                    </header>
+                    <p class="card-body">Spearheaded R&D for a waste management application aiming to digitize an industry with less than 1% recovery rates. Architected a solution projected to increase facility efficiency by 50%.</p>
+                </article>
+
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">Competitive Programming</h3>
+                        <span class="card-meta">Top 80th Percentile</span>
+                    </header>
+                    <p class="card-body">Solved 100+ challenges on HackerRank and LeetCode, showcasing a strong grasp of geometry, mathematical logic, and rigorous runtime efficiency.</p>
+                </article>
+                
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">Philippine Int. Math Olympiad</h3>
+                        <span class="card-meta">Bronze Medalist</span>
+                    </header>
+                    <p class="card-body">Secured Bronze Medal (Heat Round) by solving combinatorial problems under strict time constraints, ranking in the top 30% nationwide.</p>
+                </article>
+            </section>
+
+            <section class="section-wrapper scroll-reveal">
+                <h2 class="section-label">03. Technical Capabilities</h2>
+                <div class="tag-cloud">
+                    <div class="tech-tag">C++ (High Proficiency)</div>
+                    <div class="tech-tag">Python</div>
+                    <div class="tech-tag">Java</div>
+                    <div class="tech-tag">C</div>
+                    <div class="tech-tag">Data Structures & Algorithms</div>
+                    <div class="tech-tag">Memory Management</div>
+                    <div class="tech-tag">Linear Algebra</div>
+                    <div class="tech-tag">SOLID & OOP</div>
+                    <div class="tech-tag">Git & GitHub</div>
+                    <div class="tech-tag">Linux (Bash)</div>
+                    <div class="tech-tag">DaVinci Resolve</div>
+                </div>
+            </section>
+
+            <section class="section-wrapper scroll-reveal">
+                <h2 class="section-label">04. Credentials</h2>
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">Algorithms & Data Structures</h3>
+                        <span class="card-meta">HackerRank</span>
+                    </header>
+                    <p class="card-body">Verified skills in algorithmic problem solving and data structure optimization. (ID: EA9990A7F219)</p>
+                </article>
+                <article class="content-card">
+                    <header class="card-header">
+                        <h3 class="card-title">AWS Certified Machine Learning</h3>
+                        <span class="card-meta">Skillsoft</span>
+                    </header>
+                    <p class="card-body">Foundational certification in machine learning concepts and AWS cloud deployment. (ID: 147061247)</p>
+                </article>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        /**
+         * Module: Theme Controller
+         * Handles switching between data-theme="light" and "dark" on the root element.
+         */
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const rootElement = document.documentElement;
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = rootElement.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                rootElement.setAttribute('data-theme', 'dark');
+                themeToggleBtn.textContent = '[ Switch to Light ]';
+            } else {
+                rootElement.setAttribute('data-theme', 'light');
+                themeToggleBtn.textContent = '[ Switch to Dark ]';
+            }
+        });
+
+        /**
+         * Module: Intersection Observer (Scroll Reveal)
+         * Triggers the entry animation for content cards as they enter the viewport.
+         */
+        const revealElements = document.querySelectorAll('.scroll-reveal');
+        
+        const revealCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    // Optional: Unobserve after revealing to animate only once
+                    // observer.unobserve(entry.target); 
+                }
+            });
+        };
+
+        const revealOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15 // Trigger when 15% of the element is visible
+        };
+
+        const revealObserver = new IntersectionObserver(revealCallback, revealOptions);
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        /**
+         * Module: Ambient Cursor Tracking
+         * Updates the position of the subtle background glow to follow the mouse.
+         */
+        const cursorGlow = document.getElementById('cursorGlow');
+        
+        document.addEventListener('mousemove', (e) => {
+            // RequestAnimationFrame ensures smooth rendering aligned with monitor refresh rate
+            requestAnimationFrame(() => {
+                cursorGlow.style.left = `${e.clientX}px`;
+                cursorGlow.style.top = `${e.clientY}px`;
+            });
+        });
+    </script>
+</body>
+</html>
